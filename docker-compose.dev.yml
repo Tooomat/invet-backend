@@ -1,9 +1,9 @@
 version: "3.9"
 
 volumes:
-  server-data-dev:
-  postgres-data-dev:
-  redis-data-dev:
+  invet-server-data-dev:
+  invet-postgres-data-dev:
+  invet-redis-data-dev:
 
 services: 
   server: 
