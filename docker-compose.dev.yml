@@ -1,0 +1,64 @@
+version: "3.9"
+
+volumes:
+  server-data-dev:
+  postgres-data-dev:
+  redis-data-dev:
+
+services: 
+  server: 
+    image: invet-backend:latest
+    container_name: server-invet-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    command: npm run start:dev
+    env_file:
+      - .env.development.docker
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    volumes:
+      - .:/app
+      - invet-server-data-dev:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    container_name: postgres-invet-dev
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - invet-postgres-data-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      # test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  
+  redis:
+    image: redis:8
+    container_name: redis-invet-dev
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - invet-redis-data-dev:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
@@ -13,7 +8,370 @@ datasource db {
   provider = "postgresql"
 }
 
+// =========================
+// ENUMS
+// =========================
 enum Role {
   USER
   ADMIN
+}
+
+enum StatusUser {
+  PENDING_VERIFICATION
+  ACTIVE
+  BLOCKED
+}
+
+enum StatusInvitation {
+  DRAFTED
+  PUBLISHED
+  ARCHIVED
+  EXPIRED
+}
+
+enum EventName {
+  RESEPSI
+  ACARA_PERNIKAHAN
+}
+
+enum Attendance {
+  PRESENT
+  NOT_PRESENT
+}
+
+enum CategoryGuest {
+  FAMILY
+  FRIEND
+  OFFICE
+  VIP
+}
+
+// =========================
+// USERS
+// =========================
+model User {
+  id     String     @id @default(uuid())
+  role   Role       @default(USER)
+  status StatusUser @default(PENDING_VERIFICATION)
+
+  firstName String  @map("first_name")
+  lastName  String? @map("last_name")
+  email     String  @unique
+  phone     String? @unique @db.VarChar(20)
+  password  String
+
+  isEmailVerified Boolean   @default(false) @map("is_email_verified")
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitations Invitation[]
+
+  @@map("users")
+}
+
+// =========================
+// TEMPLATES
+// =========================
+model Template {
+  id           String  @id @default(cuid())
+  name         String
+  slug         String  @unique
+  musicUrl     String? @map("music_url") @db.Text
+  previewImage String? @map("preview_image") @db.Text
+  isPremium    Boolean @default(false) @map("is_premium")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitations Invitation[]
+
+  @@map("templates")
+}
+
+// =========================
+// INVITATIONS
+// =========================
+model Invitation {
+  id         String @id @default(uuid())
+  userId     String @map("user_id")
+  templateId String @map("template_id")
+
+  title  String
+  slug   String           @unique
+  status StatusInvitation @default(DRAFTED)
+
+  customMusicUrl String? @map("custom_music_url") @db.Text
+  preweddingUrl  String? @map("prewedding_url") @db.Text
+  livestreamUrl  String? @map("livestream_url") @db.Text
+
+  expiredAt DateTime? @map("expired_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user     User     @relation(fields: [userId], references: [id])
+  template Template @relation(fields: [templateId], references: [id])
+
+  couple    Couple? // one to one
+  events    Event[]
+  galleries Gallery[]
+  stories   OurStory[]
+  guests    Guest[]
+  gifts     Gift[]
+  thankYou  ThankYou?
+
+  @@map("invitations")
+}
+
+// =========================
+// COUPLES
+// =========================
+model Couple {
+  id           String @id @default(uuid())
+  invitationId String @unique @map("invitation_id")
+
+  heroImage String? @map("hero_image") @db.Text
+
+  groomFullName String  @map("groom_full_name")
+  groomNickname String  @map("groom_nickname")
+  groomFather   String  @map("groom_father")
+  groomMother   String  @map("groom_mother")
+  groomPhoto    String? @map("groom_photo") @db.Text
+  groomIgUrl    String? @map("groom_ig_url") @db.Text
+
+  brideFullName String  @map("bride_full_name")
+  brideNickname String  @map("bride_nickname")
+  brideFather   String  @map("bride_father")
+  brideMother   String  @map("bride_mother")
+  bridePhoto    String? @map("bride_photo") @db.Text
+  brideIgUrl    String? @map("bride_ig_url") @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitation Invitation @relation(fields: [invitationId], references: [id])
+
+  @@map("couples")
+}
+
+// =========================
+// EVENTS
+// =========================
+model Event {
+  id           String @id @default(uuid())
+  invitationId String @map("invitation_id")
+  addressId    String @map("address_id")
+
+  name      EventName
+  eventDate DateTime  @map("event_date") @db.Date
+  start     DateTime  @db.Timestamptz(3)
+  end       DateTime? @db.Timestamptz(3)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitation Invitation @relation(fields: [invitationId], references: [id])
+  address    Address    @relation(fields: [addressId], references: [id])
+
+  @@unique([invitationId, name]) // nama event sama di invitation yang sama
+  @@map("events")
+}
+
+// =========================
+// ADDRESSES
+// =========================
+model Address {
+  id            String @id @default(uuid())
+  subdistrictId String @map("subdistrict_id")
+
+  place      String
+  street     String  @db.Text
+  postalCode String  @map("postal_code") @db.VarChar(10)
+  mapsUrl    String? @map("maps_url") @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  subdistrict MasterSubdistrict @relation(fields: [subdistrictId], references: [id])
+  events      Event[]
+
+  @@map("addresses")
+}
+
+// =========================
+// MASTER WILAYAH
+// =========================
+model MasterProvince {
+  id   String @id
+  name String @db.VarChar(255)
+  code String @unique @db.VarChar(20)
+
+  cities MasterCity[]
+
+  @@map("master_provinces")
+}
+
+model MasterCity {
+  id         String @id
+  provinceId String @map("province_id")
+
+  name     String @db.VarChar(255)
+  code     String @unique @db.VarChar(20)
+  province Json
+
+  province_rel MasterProvince   @relation(fields: [provinceId], references: [id])
+  districts    MasterDistrict[]
+
+  @@map("master_cities")
+}
+
+model MasterDistrict {
+  id     String @id
+  cityId String @map("city_id")
+
+  name     String @db.VarChar(255)
+  code     String @unique @db.VarChar(20)
+  province Json
+  city     Json
+
+  city_rel     MasterCity          @relation(fields: [cityId], references: [id])
+  subdistricts MasterSubdistrict[]
+
+  @@map("master_districts")
+}
+
+model MasterSubdistrict {
+  id         String @id
+  districtId String @map("district_id")
+
+  name     String @db.VarChar(255)
+  code     String @unique @db.VarChar(20)
+  province Json
+  city     Json
+  district Json
+
+  district_rel MasterDistrict @relation(fields: [districtId], references: [id])
+  addresses    Address[]
+
+  @@map("master_subdistricts")
+}
+
+// =========================
+// GALLERIES
+// =========================
+model Gallery {
+  id           String @id @default(uuid())
+  invitationId String @map("invitation_id")
+
+  imageUrl  String @map("image_url") @db.Text
+  sortOrder Int    @default(0) @map("sort_order")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitation Invitation @relation(fields: [invitationId], references: [id])
+
+  @@unique([invitationId, imageUrl]) // gambar sama di invitation yang sama
+  @@map("galleries")
+}
+
+// =========================
+// OUR STORIES
+// =========================
+model OurStory {
+  id           String @id @default(uuid())
+  invitationId String @map("invitation_id")
+
+  title       String
+  description String    @db.Text
+  storyDate   DateTime? @map("story_date") @db.Date
+
+  imageUrl1 String? @map("image_url1") @db.Text
+  imageUrl2 String? @map("image_url2") @db.Text
+  imageUrl3 String? @map("image_url3") @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitation Invitation @relation(fields: [invitationId], references: [id])
+
+  @@unique([invitationId, title]) // judul sama di invitation yang sama
+  @@map("our_stories")
+}
+
+// =========================
+// GUESTS
+// =========================
+model Guest {
+  id           String @id @default(uuid())
+  invitationId String @map("invitation_id")
+
+  name     String
+  phone    String        @unique @db.VarChar(20)
+  category CategoryGuest
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitation Invitation @relation(fields: [invitationId], references: [id])
+  rsvp       Rsvp?
+
+  @@map("guests")
+}
+
+// =========================
+// RSVP
+// =========================
+model Rsvp {
+  id      String @id @default(uuid())
+  guestId String @unique @map("guest_id")
+
+  attendance Attendance
+  totalGuest Int        @default(1) @map("total_guest")
+  message    String?    @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  guest Guest @relation(fields: [guestId], references: [id])
+
+  @@map("rsvps")
+}
+
+// =========================
+// GIFTS
+// =========================
+model Gift {
+  id           String @id @default(uuid())
+  invitationId String @map("invitation_id")
+
+  bankName      String @map("bank_name")
+  accountNumber String @unique @map("account_number")
+  accountHolder String @map("account_holder")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitation Invitation @relation(fields: [invitationId], references: [id])
+
+  @@map("gifts")
+}
+
+// =========================
+// THANK YOU
+// =========================
+model ThankYou {
+  id           String @id @default(uuid())
+  invitationId String @unique @map("invitation_id")
+
+  imageUrl String? @map("image_url") @db.Text
+  message  String? @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  invitation Invitation @relation(fields: [invitationId], references: [id])
+
+  @@map("thank_you")
 }
