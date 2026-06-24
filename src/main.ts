@@ -11,6 +11,7 @@ async function bootstrap() {
 
   // SWAGGER
   // http://localhost:3000/api/docs
+  // http://localhost:3000/api/docs-json
   const configSwagger = new DocumentBuilder()
     .setTitle('invet API')
     .setVersion('1.0')
