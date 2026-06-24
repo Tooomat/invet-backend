@@ -156,6 +156,8 @@ cp .env.example .env.development.local
 
 ```bash
 npm run prisma:migrate:dev
+
+npm run prisma:generate:dev
 ```
 
 ### 3. (Opsional) Jalankan seeder
@@ -194,6 +196,8 @@ npm run start:dev:docker:up
 
 ```bash
 npm run prisma:migrate:dev:docker
+
+npm run prisma:generate:dev:docker
 ```
 
 ### 4. (Opsional) Jalankan seeder
@@ -240,6 +244,7 @@ cp .env.example .env.test.local
 # Edit .env.test.local
 # Gunakan database dan Redis yang BERBEDA dari development
 # Contoh: DB_NAME=invet_test
+# Tetapi anda juga bisa menggunakan DB yang sama dengan dev
 ```
 
 ### 2. Jalankan migrasi test
@@ -279,18 +284,15 @@ cp .env.example .env
 # Pastikan SECURE_COOKIES=true
 ```
 
-### 2. Deploy dengan Docker
+### 2. Build dengan Docker
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
-
-# Jalankan migrasi production
-npm run prisma:migrate:prod
+docker compose --env-file .env -f docker-compose.prod.yml up -d --build
 ```
 
 ### 3. Deploy script
 
-Simpan file berikut di server sebagai `deploy.sh` untuk mempermudah proses deploy:
+Simpan file berikut di server sebagai `deploy.sh` untuk mempermudah proses deploy saat ada update:
 
 ```bash
 #!/bin/bash
@@ -303,13 +305,11 @@ echo "Building and restarting containers..."
 docker compose -f docker-compose.prod.yml down
 docker compose -f docker-compose.prod.yml up -d --build
 
-echo "Running migrations..."
-npm run prisma:migrate:prod
-
 echo "Deploy successful!"
 ```
 
 ```bash
+# RUN:
 chmod +x deploy.sh
 ./deploy.sh
 ```
