@@ -17,8 +17,8 @@
 
 import * as runtime from "@prisma/client/runtime/index-browser"
 
-export type * from '../models.js'
-export type * from './prismaNamespace.js'
+export type * from '../models'
+export type * from './prismaNamespace'
 
 export const Decimal = runtime.Decimal
 
@@ -51,7 +51,22 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-
+  User: 'User',
+  Template: 'Template',
+  Invitation: 'Invitation',
+  Couple: 'Couple',
+  Event: 'Event',
+  Address: 'Address',
+  MasterProvince: 'MasterProvince',
+  MasterCity: 'MasterCity',
+  MasterDistrict: 'MasterDistrict',
+  MasterSubdistrict: 'MasterSubdistrict',
+  Gallery: 'Gallery',
+  OurStory: 'OurStory',
+  Guest: 'Guest',
+  Rsvp: 'Rsvp',
+  Gift: 'Gift',
+  ThankYou: 'ThankYou'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -68,4 +83,270 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const UserScalarFieldEnum = {
+  id: 'id',
+  role: 'role',
+  status: 'status',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  email: 'email',
+  phone: 'phone',
+  password: 'password',
+  isEmailVerified: 'isEmailVerified',
+  emailVerifiedAt: 'emailVerifiedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const TemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  musicUrl: 'musicUrl',
+  previewImage: 'previewImage',
+  isPremium: 'isPremium',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TemplateScalarFieldEnum = (typeof TemplateScalarFieldEnum)[keyof typeof TemplateScalarFieldEnum]
+
+
+export const InvitationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  templateId: 'templateId',
+  title: 'title',
+  slug: 'slug',
+  status: 'status',
+  customMusicUrl: 'customMusicUrl',
+  preweddingUrl: 'preweddingUrl',
+  livestreamUrl: 'livestreamUrl',
+  expiredAt: 'expiredAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvitationScalarFieldEnum = (typeof InvitationScalarFieldEnum)[keyof typeof InvitationScalarFieldEnum]
+
+
+export const CoupleScalarFieldEnum = {
+  id: 'id',
+  invitationId: 'invitationId',
+  heroImage: 'heroImage',
+  groomFullName: 'groomFullName',
+  groomNickname: 'groomNickname',
+  groomFather: 'groomFather',
+  groomMother: 'groomMother',
+  groomPhoto: 'groomPhoto',
+  groomIgUrl: 'groomIgUrl',
+  brideFullName: 'brideFullName',
+  brideNickname: 'brideNickname',
+  brideFather: 'brideFather',
+  brideMother: 'brideMother',
+  bridePhoto: 'bridePhoto',
+  brideIgUrl: 'brideIgUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupleScalarFieldEnum = (typeof CoupleScalarFieldEnum)[keyof typeof CoupleScalarFieldEnum]
+
+
+export const EventScalarFieldEnum = {
+  id: 'id',
+  invitationId: 'invitationId',
+  addressId: 'addressId',
+  name: 'name',
+  eventDate: 'eventDate',
+  start: 'start',
+  end: 'end',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const AddressScalarFieldEnum = {
+  id: 'id',
+  subdistrictId: 'subdistrictId',
+  place: 'place',
+  street: 'street',
+  postalCode: 'postalCode',
+  mapsUrl: 'mapsUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
+
+
+export const MasterProvinceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code'
+} as const
+
+export type MasterProvinceScalarFieldEnum = (typeof MasterProvinceScalarFieldEnum)[keyof typeof MasterProvinceScalarFieldEnum]
+
+
+export const MasterCityScalarFieldEnum = {
+  id: 'id',
+  provinceId: 'provinceId',
+  name: 'name',
+  code: 'code',
+  province: 'province'
+} as const
+
+export type MasterCityScalarFieldEnum = (typeof MasterCityScalarFieldEnum)[keyof typeof MasterCityScalarFieldEnum]
+
+
+export const MasterDistrictScalarFieldEnum = {
+  id: 'id',
+  cityId: 'cityId',
+  name: 'name',
+  code: 'code',
+  province: 'province',
+  city: 'city'
+} as const
+
+export type MasterDistrictScalarFieldEnum = (typeof MasterDistrictScalarFieldEnum)[keyof typeof MasterDistrictScalarFieldEnum]
+
+
+export const MasterSubdistrictScalarFieldEnum = {
+  id: 'id',
+  districtId: 'districtId',
+  name: 'name',
+  code: 'code',
+  province: 'province',
+  city: 'city',
+  district: 'district'
+} as const
+
+export type MasterSubdistrictScalarFieldEnum = (typeof MasterSubdistrictScalarFieldEnum)[keyof typeof MasterSubdistrictScalarFieldEnum]
+
+
+export const GalleryScalarFieldEnum = {
+  id: 'id',
+  invitationId: 'invitationId',
+  imageUrl: 'imageUrl',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GalleryScalarFieldEnum = (typeof GalleryScalarFieldEnum)[keyof typeof GalleryScalarFieldEnum]
+
+
+export const OurStoryScalarFieldEnum = {
+  id: 'id',
+  invitationId: 'invitationId',
+  title: 'title',
+  description: 'description',
+  storyDate: 'storyDate',
+  imageUrl1: 'imageUrl1',
+  imageUrl2: 'imageUrl2',
+  imageUrl3: 'imageUrl3',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OurStoryScalarFieldEnum = (typeof OurStoryScalarFieldEnum)[keyof typeof OurStoryScalarFieldEnum]
+
+
+export const GuestScalarFieldEnum = {
+  id: 'id',
+  invitationId: 'invitationId',
+  name: 'name',
+  phone: 'phone',
+  category: 'category',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GuestScalarFieldEnum = (typeof GuestScalarFieldEnum)[keyof typeof GuestScalarFieldEnum]
+
+
+export const RsvpScalarFieldEnum = {
+  id: 'id',
+  guestId: 'guestId',
+  attendance: 'attendance',
+  totalGuest: 'totalGuest',
+  message: 'message',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RsvpScalarFieldEnum = (typeof RsvpScalarFieldEnum)[keyof typeof RsvpScalarFieldEnum]
+
+
+export const GiftScalarFieldEnum = {
+  id: 'id',
+  invitationId: 'invitationId',
+  bankName: 'bankName',
+  accountNumber: 'accountNumber',
+  accountHolder: 'accountHolder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GiftScalarFieldEnum = (typeof GiftScalarFieldEnum)[keyof typeof GiftScalarFieldEnum]
+
+
+export const ThankYouScalarFieldEnum = {
+  id: 'id',
+  invitationId: 'invitationId',
+  imageUrl: 'imageUrl',
+  message: 'message',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ThankYouScalarFieldEnum = (typeof ThankYouScalarFieldEnum)[keyof typeof ThankYouScalarFieldEnum]
+
+
+export const SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+} as const
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+} as const
+
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
