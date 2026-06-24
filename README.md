@@ -1,98 +1,320 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Invet Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend service untuk **Invet** — platform undangan digital/online yang memungkinkan pengguna memesan dan mengelola undangan secara online.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Tech Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Runtime**: Node.js
+- **Framework**: NestJS
+- **ORM**: Prisma 7
+- **Database**: PostgreSQL 16
+- **Cache / Session Store**: Redis 8
+- **Language**: TypeScript
 
-## Project setup
+---
 
-```bash
-$ npm install
+## Features
+
+- Authentication
+  - Register
+  - Login — access token (Bearer) + refresh token (HttpOnly Cookie)
+  - Logout — blacklist access token & hapus refresh token dari Redis
+  - Refresh token — renew access token
+
+---
+
+## Project Structure
+
+```
+src/
+├── auth/               # Auth module (register, login, logout, refresh)
+├── common/             # Shared providers
+│   ├── decorators/     # Custom decorators (@CurrentUser, @AccessToken)
+│   ├── guards/         # Auth guard
+│   ├── prisma.service.ts
+│   ├── redis.service.ts
+│   ├── token.service.ts
+│   └── validation.service.ts
+├── model/              # Request & Response types
+├── generated/          # Prisma generated client
+└── main.ts
+test/
+├── auth.spec.ts
+├── test.module.ts
+└── test.service.ts
+prisma/
+├── schema.prisma
+└── migrations/
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## API Documentation
 
-# watch mode
-$ npm run start:dev
+Swagger UI tersedia saat aplikasi berjalan:
 
-# production mode
-$ npm run start:prod
+| URL | Keterangan |
+|---|---|
+| `http://localhost:3000/api/docs` | Swagger UI |
+| `http://localhost:3000/api/docs-json` | Swagger JSON spec |
+
+---
+
+## Environment Variables
+
+Salin `.env.example` sesuai environment yang dibutuhkan:
+
+| File | Kegunaan |
+|---|---|
+| `.env` | Production |
+| `.env.development.local` | Development local (tanpa Docker) |
+| `.env.development.docker` | Development dengan Docker |
+| `.env.test.local` | Testing |
+
+Lihat `.env.example` untuk daftar lengkap variabel yang dibutuhkan. Variabel utama:
+
+```env
+NODE_ENV=development
+APP_PORT=3000
+
+DATABASE_URL=postgresql://user:password@localhost:5432/invet
+DB_HOST=localhost
+DB_USER=postgres
+DB_PORT=5432
+DB_PASSWORD=
+DB_NAME=invet
+
+JWT_ACCESS_SECRET=your_access_secret
+JWT_ACCESS_EXPIRE=1h
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_REFRESH_EXPIRE=7d
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
 ```
 
-## Run tests
+> Untuk environment Docker, ganti `DB_HOST` dan `REDIS_HOST` dengan nama service di docker compose (`postgres`, `redis`).
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 20
+- npm >= 10
+- Docker & Docker Compose (untuk run dengan Docker)
+- PostgreSQL 16 (jika run local tanpa Docker)
+- Redis 8 (jika run local tanpa Docker)
+
+### Installation
 
 ```bash
-# unit tests
-$ npm run test
+# Clone repository
+git clone https://github.com/Tooomat/invet-backend.git
+cd invet-backend
 
-# e2e tests
-$ npm run test:e2e
+# Install dependencies
+npm install
 
-# test coverage
-$ npm run test:cov
+# Generate Prisma client
+npm run prisma:generate:dev
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Running Locally (tanpa Docker)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 1. Setup environment
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env.development.local
+# Edit .env.development.local sesuai konfigurasi local
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 2. Jalankan migrasi database
 
-## Resources
+```bash
+npm run prisma:migrate:dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 3. (Opsional) Jalankan seeder
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run prisma:seed:dev
+```
 
-## Support
+### 4. Jalankan aplikasi
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run start:dev
+```
 
-## Stay in touch
+Aplikasi berjalan di `http://localhost:3000`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
+
+## Running with Docker
+
+### 1. Setup environment
+
+```bash
+cp .env.example .env.development.docker
+# Edit .env.development.docker
+# Pastikan DB_HOST=postgres dan REDIS_HOST=redis
+```
+
+### 2. Jalankan semua service
+
+```bash
+npm run start:dev:docker:up
+```
+
+### 3. Jalankan migrasi
+
+```bash
+npm run prisma:migrate:dev:docker
+```
+
+### 4. (Opsional) Jalankan seeder
+
+```bash
+npm run prisma:seed:dev:docker
+```
+
+### Docker Commands
+
+| Command | Deskripsi |
+|---|---|
+| `npm run start:dev:docker:up` | Build & jalankan semua container |
+| `npm run start:dev:docker:start` | Start container yang sudah ada |
+| `npm run start:dev:docker:stop` | Stop container (data tetap ada) |
+| `npm run start:dev:docker:down` | Hapus container |
+| `npm run start:dev:docker:down:volume` | Hapus container + volume (data hilang) |
+
+---
+
+## Prisma Commands
+
+| Command | Deskripsi |
+|---|---|
+| `npm run prisma:generate:dev` | Generate Prisma client (local) |
+| `npm run prisma:generate:dev:docker` | Generate Prisma client (Docker) |
+| `npm run prisma:migrate:dev` | Jalankan migrasi development (local) |
+| `npm run prisma:migrate:dev:docker` | Jalankan migrasi development (Docker) |
+| `npm run prisma:migrate:test` | Jalankan migrasi test |
+| `npm run prisma:migrate:prod` | Jalankan migrasi production |
+| `npm run prisma:seed:dev` | Jalankan seeder development (local) |
+| `npm run prisma:seed:dev:docker` | Jalankan seeder development (Docker) |
+| `npm run prisma:studio:dev` | Buka Prisma Studio (local) |
+| `npm run prisma:studio:test` | Buka Prisma Studio test (port 5556) |
+
+---
+
+## Testing
+
+### 1. Setup environment test
+
+```bash
+cp .env.example .env.test.local
+# Edit .env.test.local
+# Gunakan database dan Redis yang BERBEDA dari development
+# Contoh: DB_NAME=invet_test
+```
+
+### 2. Jalankan migrasi test
+
+```bash
+npm run prisma:migrate:test
+```
+
+### 3. Jalankan test
+
+```bash
+# Run semua test
+npm run test
+
+# Run file test tertentu
+npm run test -- test/auth.spec.ts
+
+# Watch mode
+npm run test:watch
+
+# Coverage report
+npm run test:cov
+```
+
+> Pastikan PostgreSQL dan Redis untuk environment test sudah berjalan sebelum menjalankan test.
+
+---
+
+## Deployment (Production)
+
+### 1. Setup environment
+
+```bash
+cp .env.example .env
+# Edit .env untuk konfigurasi production
+# Pastikan NODE_ENV=production
+# Pastikan SECURE_COOKIES=true
+```
+
+### 2. Deploy dengan Docker
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+
+# Jalankan migrasi production
+npm run prisma:migrate:prod
+```
+
+### 3. Deploy script
+
+Simpan file berikut di server sebagai `deploy.sh` untuk mempermudah proses deploy:
+
+```bash
+#!/bin/bash
+set -e
+
+echo "Pulling latest changes..."
+git pull origin main
+
+echo "Building and restarting containers..."
+docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml up -d --build
+
+echo "Running migrations..."
+npm run prisma:migrate:prod
+
+echo "Deploy successful!"
+```
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+---
+
+## All Scripts
+
+| Script | Deskripsi |
+|---|---|
+| `npm run build` | Build project |
+| `npm run format` | Format kode dengan Prettier |
+| `npm run lint` | Jalankan ESLint & auto-fix |
+| `npm run start:dev` | Development mode dengan hot reload |
+| `npm run start:debug` | Debug mode dengan hot reload |
+| `npm run start:prod` | Jalankan production build |
+| `npm run test` | Run semua test |
+| `npm run test:watch` | Run test watch mode |
+| `npm run test:cov` | Run test dengan coverage |
+
+---
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED
