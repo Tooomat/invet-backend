@@ -1,4 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from "@nestjs/common";
+import { PinoLogger } from "nestjs-pino";
 import { ZodError } from "zod";
 
 const getStatusMessage = (status: number): string => {
@@ -52,11 +53,19 @@ const getStatusMessage = (status: number): string => {
     return statusMessages[status] || "An error occurred"
 }
 
+// ErrorFilter — log hanya error 500 (unexpected) yang tidak tertangkap, 
+// karena interceptor mungkin tidak selalu menangkap error yang di-catch filter
 @Catch(ZodError, HttpException)
 export class ErrorFilter implements ExceptionFilter {
+
+    constructor(private logger: PinoLogger) {
+        this.logger.setContext(ErrorFilter.name)
+    }
+    
     catch(exception: any, host: ArgumentsHost) {
-        
+        const request = host.switchToHttp().getRequest()
         const response = host.switchToHttp().getResponse()
+        const requestId = request.requestId ?? null
 
         // ERROR HTTP
         if (exception instanceof HttpException) {
@@ -83,6 +92,15 @@ export class ErrorFilter implements ExceptionFilter {
 
         // ERROR SERVER
         } else {
+            this.logger.error({
+                type: 'unhandled_error',
+                requestId,
+                errorMessage: exception.message,
+                errorName: exception.constructor.name,
+                stack: exception.stack,
+                timestamp: new Date().toISOString()
+            })
+            
             response.status(500).json({
                 status: false,
                 message: "Internal server error",

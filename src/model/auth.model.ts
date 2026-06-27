@@ -60,6 +60,9 @@ export class AuthLoginResponse {
 
     @ApiPropertyOptional({ example: 'eyJhbGci...' })
     refreshToken?: string | null
+
+    @ApiPropertyOptional({ example: 'false' })
+    isEmailVerified?: boolean | undefined
 }
 
 // ------- REFRESH -------------------------------------------------------------

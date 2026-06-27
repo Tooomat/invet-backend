@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { EmailVerificationModule } from 'src/email-verification/email-verification.module';
 
 @Module({
+  imports: [EmailVerificationModule],
   controllers: [AuthController],
   providers: [AuthService]
 })

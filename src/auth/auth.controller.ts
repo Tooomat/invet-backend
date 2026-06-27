@@ -6,6 +6,7 @@ import { AuthLoginRequest, AuthLoginResponse, AuthRefreshResponse, AuthRegisterR
 import { Response, Request } from 'express';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { AccessToken } from 'src/common/decorators/access-token.decorator';
+import { RequestId } from 'src/common/decorators/request-id.decorator';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -19,8 +20,11 @@ export class AuthController {
     @ApiBody({ type: AuthRegisterRequest })
     @ApiResponse({ status: 201, description: 'User registered successfully' })
     @ApiResponse({ status: 400, description: 'Validation error or email already exists' })
-    async register(@Body() req: AuthRegisterRequest): Promise<WebResponse<AuthRegisterResponse>> {
-        const result: AuthRegisterResponse = await this.authService.register(req)
+    async register(
+        @Body() req: AuthRegisterRequest,
+        @RequestId() requestId: string
+    ): Promise<WebResponse<AuthRegisterResponse>> {
+        const result: AuthRegisterResponse = await this.authService.register(req, requestId)
         return {
             success: true,
             message: "Registration successfull",
@@ -40,9 +44,10 @@ export class AuthController {
     @ApiResponse({ status: 401, description: 'Invalid email or password' })
     async login(
         @Body() req: AuthLoginRequest,
-        @Res({ passthrough: true }) res: Response
+        @Res({ passthrough: true }) res: Response,
+        @RequestId() requestId: string
     ): Promise<WebResponse<AuthLoginResponse>> {
-        const result: AuthLoginResponse = await this.authService.login(req)
+        const result: AuthLoginResponse = await this.authService.login(req, requestId)
 
         res.cookie("refreshToken", result.refreshToken, {
             httpOnly: true,
@@ -56,7 +61,8 @@ export class AuthController {
             success: true,
             message: "Login successfull",
             data: {
-                accessToken: result.accessToken
+                accessToken: result.accessToken,
+                isEmailVerified: result.isEmailVerified
             }
         }
     }
@@ -70,9 +76,10 @@ export class AuthController {
     @ApiResponse({ status: 403, description: 'Account has been blocked' })
     async renewToken(
         @Req() req: Request,
+        @RequestId() requestId: string
     ): Promise<WebResponse<AuthRefreshResponse>> {
         const refreshTokenHttpOnlyCookie = req.cookies['refreshToken'];
-        const result: AuthRefreshResponse = await this.authService.renewToken(refreshTokenHttpOnlyCookie)
+        const result: AuthRefreshResponse = await this.authService.renewToken(refreshTokenHttpOnlyCookie, requestId)
 
         return {
             success: true,
@@ -95,10 +102,11 @@ export class AuthController {
         @AccessToken() accessToken: string,
         @Req() req: Request,
         @Res({ passthrough: true }) res: Response,
-    ): Promise<WebResponse<null>> {
+        @RequestId() requestId: string
+    ): Promise<WebResponse<string>> {
         const refreshToken: string = req.cookies['refreshToken']
 
-        await this.authService.logout(accessToken, refreshToken)
+        await this.authService.logout(accessToken, refreshToken, requestId)
 
         res.clearCookie('refreshToken', {
             httpOnly: true,
@@ -110,7 +118,7 @@ export class AuthController {
         return {
             success: true,
             message: 'Logout successful',
-            data: null
+            data: 'OK'
         }
     }
 }
