@@ -32,24 +32,19 @@ Backend service untuk **Invet** — platform undangan digital/online yang memung
 
 ---
 
-## Features
-
-- Authentication
-  - Register
-  - Login — access token (Bearer) + refresh token (HttpOnly Cookie)
-  - Logout — blacklist access token & hapus refresh token dari Redis
-  - Refresh token — renew access token
-
----
-
 ## Project Structure
 
 ```
 src/
-├── auth/               # Auth module (register, login, logout, refresh)
+├── auth/               # module Auth (register, login, logout, refresh)
+├── email/              # module Email (configurasi RESEND)
+├── email-verification/ # module Email-Verification (sendOnRegister, resend, verify)
+├── queue/              # module Queue (producer/add to queue dan consumer/worker) sebagai Message Queue
+|
 ├── common/             # Shared providers
-│   ├── decorators/     # Custom decorators (@CurrentUser, @AccessToken)
+│   ├── decorators/     # Custom decorators (@CurrentUser, @AccessToken, @RequestId)
 │   ├── guards/         # Auth guard
+│   ├── intercetors/    # Custom interceptor (logging)
 │   ├── prisma.service.ts
 │   ├── redis.service.ts
 │   ├── token.service.ts
@@ -64,7 +59,74 @@ test/
 prisma/
 ├── schema.prisma
 └── migrations/
+└── seeds/
 ```
+
+---
+
+## Konsep Eksekusi NestJs
+
+Request
+
+   ↓
+
+Middleware
+
+   ↓
+
+Guard
+
+   ↓
+
+Interceptor (before)
+
+   ↓
+
+Pipe
+
+   ↓
+
+Controller/Handler
+
+   ↓
+
+Interceptor (after)  ← bisa akses response di sini
+
+   ↓
+   
+Response
+
+
+`Middleware`:
+- Jalan sebelum `request` masuk ke NestJS pipeline (sebelum guard, pipe, interceptor)
+- Tidak tahu tentang NestJS context (tidak tahu handler mana yang akan dipanggil), tidak tahu siapa user yang login
+- Akses ke `req` dan `res` Express langsung
+- Cocok untuk: `logging raw HTTP`, `CORS`, `rate limiting`, `parsing body`, `cookie parser`
+
+`Guard`:
+- Jalan setelah middleware dan sebelum interceptor
+- Tahu tentang NestJS context (tahu controller, method, decorator yang dipakai)
+- Tugasnya hanya satu: **boleh lanjut atau tidak** (return true/false)
+- Bisa akses token, decode payload, cek role, cek status user
+- Cocok untuk: `autentikasi`, `autorisasi`, `cek role/permission`, `cek status user (blocked)`
+
+`Interceptor`:
+- Jalan setelah `guard`, sebelum dan sesudah handler
+- Tahu tentang NestJS context (tahu controller, method, dll)
+- Bisa akses response data sebelum dikirim ke client
+- Cocok untuk: `transform response`, `logging dengan statusCode/ logging HTTP req and res`, `caching`, `timeout`
+
+`Pipe`:
+- Jalan setelah interceptor (before), sebelum masuk ke handler
+- Tugasnya: **validasi dan transformasi input** (body, param, query)
+- Kalau validasi gagal, throw exception sebelum handler dipanggil
+- Cocok untuk: `validasi DTO`, `transformasi tipe data (string → number)`, `sanitasi input`
+
+`ExceptionFilter`:
+- Tidak ada di urutan normal di atas, tapi jalan ketika ada **exception yang tidak tertangkap**
+- Menangkap semua error dari manapun (guard, interceptor, pipe, handler)
+- Bisa format ulang response error sebelum dikirim ke client
+- Cocok untuk: `format error response`, `logging error`, `handle HttpException`
 
 ---
 
@@ -74,6 +136,7 @@ Swagger UI tersedia saat aplikasi berjalan:
 
 | URL | Keterangan |
 |---|---|
+| `inver-backend/docs` | Manual |
 | `http://localhost:3000/api/docs` | Swagger UI |
 | `http://localhost:3000/api/docs-json` | Swagger JSON spec |
 
@@ -123,9 +186,9 @@ REDIS_PASSWORD=
 
 - Node.js >= 20
 - npm >= 10
-- Docker & Docker Compose (untuk run dengan Docker)
+- Docker & Docker Compose (jika run dengan Docker)
 - PostgreSQL 16 (jika run local tanpa Docker)
-- Redis 8 (jika run local tanpa Docker)
+- Redis >=7 (jika run local tanpa Docker)
 
 ### Installation
 
@@ -304,6 +367,9 @@ git pull origin main
 echo "Building and restarting containers..."
 docker compose -f docker-compose.prod.yml down
 docker compose -f docker-compose.prod.yml up -d --build
+
+echo "Running migrations..."
+docker compose -f docker-compose.prod.yml exec server npx prisma migrate deploy
 
 echo "Deploy successful!"
 ```

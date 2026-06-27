@@ -9,6 +9,16 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // COOKIE
+  app.use(cookieParser());
+  
+  app.enableCors({
+    origin: ['http://localhost:3000', 'https://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // kalau pakai cookies / auth header
+  });
+  
   // SWAGGER
   // http://localhost:3000/api/docs
   // http://localhost:3000/api/docs-json
@@ -17,15 +27,12 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-
+    
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api/docs', app, document);
 
   // LOGGER PINO
   app.useLogger(app.get(Logger))
-  
-  // COOKIE
-  app.use(cookieParser());
 
   // PORT
   const config = app.get(ConfigService);

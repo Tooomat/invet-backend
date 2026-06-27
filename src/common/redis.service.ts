@@ -42,4 +42,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         const result = await this.client.exists(key);
         return result === 1;
     }
+
+    async ttl(key: string): Promise<number> {
+        return this.client.ttl(key)
+    }
 }
