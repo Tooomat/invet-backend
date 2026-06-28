@@ -136,7 +136,7 @@ Swagger UI tersedia saat aplikasi berjalan:
 
 | URL | Keterangan |
 |---|---|
-| `inver-backend/docs` | Manual |
+| `invet-backend/docs` | Manual |
 | `http://localhost:3000/api/docs` | Swagger UI |
 | `http://localhost:3000/api/docs-json` | Swagger JSON spec |
 
