@@ -1,10 +1,10 @@
-export function verifyEmailTemplate(params: {
+export function changeEmailTemplate(params: {
     fullName: string
     verifyUrl: string
     expiresIn: string
 }): { subject: string; html: string } {
     return {
-        subject: 'Verifikasi email kamu — Invet',
+        subject: 'Verifikasi email baru kamu — Invet',
         html: `
             <body style="margin:0; padding:0; background:#f4f4f5; font-family: Arial, sans-serif;">
                 <table width="100%" cellpadding="0" cellspacing="0" style="padding: 32px 16px;">
@@ -74,7 +74,7 @@ export function verifyEmailTemplate(params: {
                                                     line-height:30px;
                                                 "
                                             >
-                                                Verifikasi Email Kamu
+                                                Verifikasi Email Baru Kamu
                                             </div>
 
                                             <div style="height:10px;"></div>
@@ -86,7 +86,7 @@ export function verifyEmailTemplate(params: {
                                                     line-height:24px;
                                                 "
                                             >
-                                                Satu langkah lagi untuk mengaktifkan akun
+                                                Konfirmasi perubahan alamat email akun kamu
                                             </div>
 
                                         </td>
@@ -102,15 +102,14 @@ export function verifyEmailTemplate(params: {
                                             </p>
 
                                             <p style="margin:0 0 34px;font-size:15px;line-height:30px;color:#374151;">
-                                                Terima kasih telah mendaftar di
-                                                <strong style="color:#D51C39;">Invet</strong>.
-                                                Klik tombol di bawah untuk memverifikasi alamat email kamu dan mulai menggunakan aplikasi.
+                                                Kami menerima permintaan untuk mengganti alamat email akun
+                                                <strong style="color:#D51C39;">Invet</strong> kamu.
+                                                Klik tombol di bawah untuk memverifikasi alamat email baru kamu.
                                             </p>
 
                                             <table width="100%" cellpadding="0" cellspacing="0">
                                                 <tr>
                                                     <td align="center">
-
                                                         <a
                                                             href="${params.verifyUrl}"
                                                             style="
@@ -124,15 +123,15 @@ export function verifyEmailTemplate(params: {
                                                                 padding:16px 42px;
                                                             "
                                                         >
-                                                            Verifikasi Email Saya
+                                                            Verifikasi Email Baru
                                                         </a>
-
                                                     </td>
                                                 </tr>
                                             </table>
 
                                             <div style="height:32px;"></div>
 
+                                            <!-- WARNING BOX -->
                                             <table
                                                 width="100%"
                                                 cellpadding="0"
@@ -141,6 +140,7 @@ export function verifyEmailTemplate(params: {
                                                     background:#FFF8E8;
                                                     border:1px solid #F5D68A;
                                                     border-radius:8px;
+                                                    margin-bottom:16px;
                                                 "
                                             >
                                                 <tr>
@@ -158,6 +158,31 @@ export function verifyEmailTemplate(params: {
                                                 </tr>
                                             </table>
 
+                                            <!-- INFO BOX -->
+                                            <table
+                                                width="100%"
+                                                cellpadding="0"
+                                                cellspacing="0"
+                                                style="
+                                                    background:#FFF0F2;
+                                                    border:1px solid #FECDD3;
+                                                    border-radius:8px;
+                                                "
+                                            >
+                                                <tr>
+                                                    <td
+                                                        style="
+                                                            padding:16px 18px;
+                                                            font-size:14px;
+                                                            color:#9F1239;
+                                                            line-height:22px;
+                                                        "
+                                                    >
+                                                        Setelah verifikasi berhasil, kamu akan otomatis keluar dan perlu login ulang menggunakan email baru kamu.
+                                                    </td>
+                                                </tr>
+                                            </table>
+
                                         </td>
                                     </tr>
 
@@ -169,12 +194,12 @@ export function verifyEmailTemplate(params: {
                         <!-- FOOTER -->
                         <tr>
                             <td style="padding:24px; text-align:center;">
-                            <p style="font-size:12px; color:#9CA3AF; margin:0 0 4px;">
-                                Jika kamu tidak mendaftar akun di Invet, abaikan email ini.
-                            </p>
-                            <p style="font-size:12px; color:#D1D5DB; margin:0;">
-                                &copy; ${new Date().getFullYear()} Invet &middot; Semua hak dilindungi
-                            </p>
+                                <p style="font-size:12px; color:#9CA3AF; margin:0 0 4px;">
+                                    Jika kamu tidak meminta perubahan email ini, segera amankan akun kamu dengan mengganti password.
+                                </p>
+                                <p style="font-size:12px; color:#D1D5DB; margin:0;">
+                                    &copy; ${new Date().getFullYear()} Invet &middot; Semua hak dilindungi
+                                </p>
                             </td>
                         </tr>
 

@@ -78,7 +78,7 @@ export class EmailVerificationService {
         const verifyLink: string = `${this.configService.getOrThrow('FRONTEND_URL')}/login/verify-email?token=${emailVerif.token}`
 
         const templateHtml = verifyEmailTemplate({
-            firstName: user.lastName ? `${user.firstName} ${user.lastName}` : `${user.firstName}`,
+            fullName: user.lastName ? `${user.firstName} ${user.lastName}` : `${user.firstName}`,
             verifyUrl: verifyLink,
             expiresIn: '1 jam',
         })

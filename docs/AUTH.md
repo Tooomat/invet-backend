@@ -1,3 +1,7 @@
+# API Contract
+
+---
+
 # Authentication
 
 ### 1.1 Register
@@ -5,6 +9,7 @@
 Membuat akun pengguna baru.
 
 - **Endpoint:** `POST /api/auth/register`
+
 - **Request Body (multipart/form-data):**
 
 | Key           | Type | Required | Description |
@@ -43,6 +48,7 @@ Membuat akun pengguna baru.
 ### 1.2 Login
 
 Login untuk mendapatkan JWT token.  
+
 **Endpoint:** `POST /api/auth/login`
 
 **Request Body (application/json):**
@@ -161,7 +167,7 @@ Logout untuk keluar aplikasi.
 
 **Request Header:**
 
-- **Authorization: Bearer <token> (accessToken)**
+- `Authorization: Bearer <accessToken>`
 
 **Response:** `200 OK`
 
@@ -172,5 +178,28 @@ Logout untuk keluar aplikasi.
   "data": "OK"
 }
 ```
+
+### 1.5 Forgot Password
+
+```
+User tidak ingat password / belum login
+    ↓
+POST /api/auth/forgot-password
+Body: { email }
+    ↓
+Kirim email berisi link reset (token UUID, exp 1 jam)
+    ↓
+User klik link → POST /api/auth/reset-password
+Body: { token, newPassword, confirmPassword }
+    ↓
+Validasi token → update password di DB
+    ↓
+Invalidasi semua session
+    ↓
+User login ulang
+```
+
+### 1.6 Reset Password
+
 
 ---

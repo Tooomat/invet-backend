@@ -1,23 +1,30 @@
+# API Contract
+
+---
+
 # Email Verification
 
 ### 1.1 Resend LINK to email
 
 resend email verification ke email user
+
 **Endpoint:** `POST /api/email-verification/resend`  
 
 **Request Header:**
 
-- **Authorization: Bearer <token> (accessToken)**
+- `Authorization: Bearer <accessToken>`
 
 **Response:** `200 OK`
 
-```json
+```json 
 {
   "success": true,
   "message": "Verification link sent to email",
   "data": null
 }
 ```
+
+note: verifikasi email akan diarakan ke `FRONTEND_URL/login/verify-email?token=....`
 
 **Response:** `429 Too Many Request`
 
@@ -46,7 +53,8 @@ resend email verification ke email user
 
 verifikasi email user menggunakan token dari send email
 
-**Endpoint:** `GET /api/email-verification/verify`  
+**Endpoint:** `GET /api/email-verification/verify`
+  
 **Query param:**
 |   Key   |  Type  | Required | Description |
 | ------- | ------ | -------- | ----------- |

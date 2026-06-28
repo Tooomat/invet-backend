@@ -300,4 +300,8 @@ export class AuthService {
             timestamp: new Date().toISOString()
         })
     }
+
+    async forgotPassword() {}
+
+    async resetPassword() {}
 }
