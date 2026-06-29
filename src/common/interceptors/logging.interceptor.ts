@@ -24,6 +24,7 @@ export class LoggingInterceptor implements NestInterceptor{
             method,
             path,
             ip,
+            body,
             headers
         } = request
 
@@ -41,7 +42,9 @@ export class LoggingInterceptor implements NestInterceptor{
 
         return next.handle().pipe(
             tap({
-                next: () => {
+                next: (data) => {
+                    const bodySize = Buffer.byteLength(JSON.stringify(data ?? ''), 'utf8')
+
                     this.logger.info({
                         type: 'http_request',
                         requestId,
@@ -52,10 +55,16 @@ export class LoggingInterceptor implements NestInterceptor{
                         ip: realIp,
                         userAgent,
                         duration: `${Date.now() - start}ms`,
+                        responseSizeBytes: bodySize,     
+                        responseSizeKb: (bodySize / 1024).toFixed(2) + 'KB', 
                         timestamp: new Date().toISOString()
                     })
                 },
                 error: (error) => {
+                    const requestBodySize = request.headers['content-length'] 
+                    ? parseInt(request.headers['content-length']) 
+                    : 0
+    
                     this.logger.error({
                         type: 'http_request_error',
                         requestId,
@@ -69,6 +78,7 @@ export class LoggingInterceptor implements NestInterceptor{
                         errorMessage: error.message,
                         stack: error.stack,
                         errorName: error.constructor.name,
+                        requestBodySizeBytes: requestBodySize,
                         timestamp: new Date().toISOString()
                     })
                 }

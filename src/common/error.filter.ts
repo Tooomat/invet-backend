@@ -88,8 +88,7 @@ export class ErrorFilter implements ExceptionFilter {
                     message: e.message
                 }))
             })
-
-
+            
         // ERROR SERVER
         } else {
             this.logger.error({

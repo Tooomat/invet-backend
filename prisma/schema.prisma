@@ -77,8 +77,9 @@ model User {
 // EMAIL VERIFICATION
 // =========================
 model EmailVerification {
-  id        String    @id @default(uuid())
-  token     String    @unique
+  id    String @id @default(uuid())
+  token String @unique
+
   expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
   usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -90,14 +91,16 @@ model EmailVerification {
 }
 
 // =========================
-// EMAIL VERIFICATION
+// EMAIL CHANGE VERIFICATION
 // =========================
 model ChangeEmailRequest {
   id    String @id @default(uuid())
   token String @unique
 
-  newEmail  String    @unique @map("new_email")
-  
+  newEmail String @map("new_email")
+
+  isEmailSent Boolean @default(false) @map("is_email_sent")
+
   expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
   usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)

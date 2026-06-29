@@ -40,7 +40,10 @@ export class UserValidation {
     static readonly VERIFY_NEW_EMAIL_SCHEMA = z.object({
         token: z
             .string()
-            .min(1, "Token is required")
+            .min(1, 'Token is required')
+            .max(100, 'Invalid token')
+            .regex(/^[A-Za-z0-9_-]+$/, 'Invalid token format') // base64url charset
+            .transform(val => val.trim())
     })
 
     static readonly CHANGE_PASSWORD_SCHEMA = z.object({
