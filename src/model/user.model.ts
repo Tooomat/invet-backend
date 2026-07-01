@@ -45,7 +45,49 @@ export class UserUpdateResponse {
 }
 
 // -------- PROFILE ----------------------------------------------------------
-export class UserProfileResponse {}
+class UserSecurityResponse {
+
+    @ApiPropertyOptional({ example: '2026-06-01T00:00:00.000Z', nullable: true })
+    lastEmailChangedAt?: Date | null
+
+    @ApiPropertyOptional({ example: '2026-06-01T00:00:00.000Z', nullable: true })
+    lastPasswordChangedAt?: Date | null
+
+    @ApiPropertyOptional({ example: '2026-06-15T10:30:00.000Z', nullable: true })
+    lastLoginAt?: Date | null
+}
+
+export class UserProfileResponse {
+    @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+    id: string
+
+    @ApiProperty({ example: 'John' })
+    firstName: string
+
+    @ApiProperty({ example: 'Doe', nullable: true })
+    lastName?: string | null
+
+    @ApiProperty({ enum: StatusUser, example: StatusUser.ACTIVE })
+    status: StatusUser
+
+    @ApiProperty({ example: 'john@example.com' })
+    email: string
+
+    @ApiProperty({ enum: Role, example: Role.USER })
+    role: Role
+
+    @ApiPropertyOptional({ example: '2026-06-01T00:00:00.000Z', nullable: true })
+    emailVerifiedAt?: Date | null
+
+    @ApiPropertyOptional({ example: '2026-06-01T00:00:00.000Z', nullable: true })
+    updatedAt?: Date | null
+
+    @ApiProperty({ type: UserSecurityResponse })
+    security: UserSecurityResponse
+    
+    @ApiProperty({ example: '2026-06-01T00:00:00.000Z' })
+    memberSince: Date
+}
 
 // -------- CHANGE EMAIL ----------------------------------------------------------
 export class ChangeEmailUserRequest {

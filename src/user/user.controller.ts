@@ -5,7 +5,7 @@ import { AuthGuard } from 'src/common/guards/auth.guard';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { Response, Request } from 'express';
-import { ChangeEmailUserRequest, ChangePasswordRequest, UserResponse, UserUpdateRequest, UserUpdateResponse, VerifyChangeEmailQuery } from 'src/model/user.model';
+import { ChangeEmailUserRequest, ChangePasswordRequest, UserProfileResponse, UserResponse, UserUpdateRequest, UserUpdateResponse, VerifyChangeEmailQuery } from 'src/model/user.model';
 import type { AccessTokenPayload } from 'src/common/token.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { AccessToken } from 'src/common/decorators/access-token.decorator';
@@ -60,8 +60,26 @@ export class UserController {
         }
     }
 
-    // TODO:
-    async profile() {}
+    @Get("/profile")
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthGuard)
+    @Throttle({ private: { limit: 100, ttl: 1 * 60 * 1000, blockDuration: 1 * 60 * 1000 } }) // 100x/menit, block 1 menit
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get current profile user' })
+    @ApiBody({ type: UserUpdateRequest })
+    @ApiResponse({ status: 200, description: 'Get profile user successfully' })
+    @ApiResponse({ status: 401, description: 'User not found' })
+    async profile(
+        @CurrentUser() user: AccessTokenPayload,
+        @RequestId() requestId: string,
+    ): Promise<WebResponse<UserProfileResponse>> {
+        const result: UserProfileResponse = await this.userService.profile(user.sub, requestId)
+        return {
+            success: true,
+            message: 'Get profile user successfully',
+            data: result
+        }
+    }
 
     @Post('/change-email')
     @HttpCode(HttpStatus.OK)

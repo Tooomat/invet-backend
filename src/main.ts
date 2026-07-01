@@ -31,12 +31,18 @@ async function bootstrap() {
         defaultSrc:  ["'self'"],
         scriptSrc:   ["'self'", "'unsafe-inline'"],
         styleSrc:    ["'self'", "'unsafe-inline'"],
+        // kalau mengirim HTML/email preview
         imgSrc:      ["'self'", "data:", "https:"],
         connectSrc:  ["'self'"],
+        // mencegah manipulasi base URL
+        baseUri:     ["'self'"],
         fontSrc:     ["'self'"],
+        // mencegah <object>, flash, dll.
         objectSrc:   ["'none'"],
         mediaSrc:    ["'self'"],
         frameSrc:    ["'none'"],
+        // mencegah website lain embed aplikasi
+        frameAncestors: ["'none'"],
       },
     } : false,
     crossOriginEmbedderPolicy: isProduction,
@@ -46,8 +52,11 @@ async function bootstrap() {
     // same-site    → boleh dari subdomain yang sama (Frontend & backend subdomain sama (appppp.invet.com + apiiiii.invet.com))
     // cross-origin → boleh dari mana saja (beda domain) (Frontend & backend domain beda (vercel.app + api.invet.com))
     crossOriginResourcePolicy: { policy: 'same-site' },
+    // hapus X-Powered-By
     hidePoweredBy:             true,
+    // HTTPS only
     hsts:                      isProduction,
+    // cegah MIME sniffing
     noSniff:                   true,
     referrerPolicy:            { policy: 'strict-origin-when-cross-origin' },
   }))

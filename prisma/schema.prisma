@@ -35,6 +35,7 @@ enum EventName {
 }
 
 enum Attendance {
+  NOT_CHOOSING
   PRESENT
   NOT_PRESENT
 }
@@ -89,6 +90,9 @@ model User {
   isEmailVerified Boolean   @default(false) @map("is_email_verified")
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
 
+  lastLoginAt           DateTime? @map("last_login_at") @db.Timestamptz(3)
+  lastPasswordChangedAt DateTime? @map("last_password_change_at") @db.Timestamptz(3)
+
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -99,9 +103,28 @@ model User {
   orders                  Order[]
   userCustomTemplates     UserCustomTemplate[] @relation("UserId")
   assignedCustomTemplates UserCustomTemplate[] @relation("AssignedBy")
+  // systemSettings          SystemSetting[]
 
   @@map("users")
 }
+
+// =========================
+// SYSTEM SETTING
+// =========================
+// model SystemSetting {
+//   id String @id @default(uuid())
+
+//   adminId String @map("admin_id")
+//   user    User   @relation(fields: [adminId], references: [id])
+
+//   maintenanceMode    Boolean   @map("maintenance_mode")
+//   maintenanceMessage String    @map("maintenance_message")
+//   estimatedStart     DateTime  @map("estimated_start") @db.Timestamptz(3)
+//   estimatedFinish    DateTime? @map("estimated_finish") @db.Timestamptz(3)
+//   updatedAt          DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+//   @@map("system_settings")
+// }
 
 // =========================
 // EMAIL VERIFICATION
@@ -113,8 +136,8 @@ model EmailVerification {
   expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
   usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("email_verifications")
 }
@@ -517,7 +540,7 @@ model Rsvp {
   id      String @id @default(uuid())
   guestId String @unique @map("guest_id")
 
-  attendance Attendance
+  attendance Attendance @default(NOT_CHOOSING)
   totalGuest Int        @default(1) @map("total_guest")
   message    String?    @db.Text
 

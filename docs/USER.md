@@ -103,7 +103,45 @@ Update nama user yang sedang login. Minimal satu field harus diisi.
 
 ## 1.1.3 Profile
 
-*(BELUM)*
+Mendapatkan data profile user yang sedang login.
+
+**Endpoint:** `GET /api/users/profile`
+
+**Request Header:**
+- `Authorization: Bearer <accessToken>`
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Get profile user successfully",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "firstName": "Jhon",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "role": "USER",
+    "status": "ACTIVE",
+    "emailVerifiedAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "security": {
+      "lastEmailChangedAt": "2026-06-01T00:00:00.000Z",
+      "lastPasswordChangedAt": "2026-06-01T00:00:00.000Z",
+      "lastLoginAt": "2026-06-01T00:00:00.000Z",
+    },
+    "memberSince": "2026-01-01T00:00:00.000Z",
+  }
+}
+```
+
+**Response:** `401 Unauthorized`
+```json
+{
+  "success": false,
+  "message": "Unauthorized",
+  "errors": "User not found"
+}
+```
 
 ---
 

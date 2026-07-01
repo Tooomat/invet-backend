@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { JwtModule } from '@nestjs/jwt';
@@ -11,6 +11,7 @@ import { RedisService } from './redis.service';
 import { TokenService } from './token.service';
 import { AuthGuard } from './guards/auth.guard';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import { MaintenanceMiddleware } from './middleware/maintenance.middleware';
 
 @Global()
 @Module({
@@ -69,4 +70,10 @@ import { LoggingInterceptor } from './interceptors/logging.interceptor';
     ],
     exports: [PrismaService, ValidationService, TokenService, RedisService, AuthGuard]
 })
-export class CommonModule {}
+export class CommonModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+        .apply(MaintenanceMiddleware)
+        .forRoutes('*');
+    }
+}

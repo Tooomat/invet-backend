@@ -158,6 +158,15 @@ export class AuthService {
             60 * 60 * 24 * 7
         )
 
+        await this.prismaService.user.update({
+            where: {
+                id: user.id
+            },
+            data: {
+                lastLoginAt: new Date()
+            }
+        })
+
         this.logger.info({
             type: 'login',
             userId: user.id,

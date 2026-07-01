@@ -65,6 +65,13 @@ export class UserService {
             )
         }
 
+        this.logger.info({
+            type: 'user_current',
+            userId,
+            requestId,
+            timestamp: new Date().toISOString()
+        })
+
         return {
             id: user.id,
             name: user.lastName ? `${user.firstName} ${user.lastName}` : `${user.firstName}`,
@@ -125,13 +132,76 @@ export class UserService {
 
     // TODO: BELUM SELESAI
     async profile(userId: string, requestId: string): Promise<UserProfileResponse> {
-        throw new HttpException(
-            'Not implemented yet',
-            HttpStatus.NOT_IMPLEMENTED
-        )
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id: userId
+            },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                status: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+                emailVerifiedAt: true,
+                lastLoginAt: true,
+                lastPasswordChangedAt: true
+            }
+        })
+
+        if (!user) {
+            this.logger.warn({
+                type: 'get_profile_failed',
+                reason: 'user_not_found',
+                userId,
+                requestId,
+                timestamp: new Date().toISOString()
+            })
+            throw new HttpException(
+                "User not found",
+                HttpStatus.UNAUTHORIZED
+            )
+        }
+
+        const changeEmailReq = await this.prismaService.changeEmailRequest.findFirst({
+            where: {
+                userId: userId,
+                usedAt: {
+                    not: null
+                }
+            },
+            orderBy: {
+                usedAt: 'desc'
+            },
+            select: {
+                usedAt: true
+            }
+        })
+
+        this.logger.info({
+            type: 'get_user_profile',
+            userId,
+            requestId,
+            timestamp: new Date().toISOString()
+        })
 
         return {
-
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            status: user.status,
+            email: user.email,
+            role: user.role,
+            emailVerifiedAt: user.emailVerifiedAt,
+            updatedAt: user.updatedAt,
+            security: {
+                lastPasswordChangedAt: user.lastPasswordChangedAt,
+                lastLoginAt: user.lastLoginAt,
+                lastEmailChangedAt: changeEmailReq?.usedAt ?? null
+            },
+            memberSince: user.createdAt
         }
     }
 
@@ -477,6 +547,15 @@ export class UserService {
             },
             data: { 
                 password: hashedNewPassword 
+            }
+        })
+
+        await this.prismaService.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                lastPasswordChangedAt: new Date()
             }
         })
 
