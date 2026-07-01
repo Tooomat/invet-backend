@@ -29,7 +29,7 @@ export class LoggingInterceptor implements NestInterceptor{
         } = request
 
         const userAgent = headers['user-agent']
-        const realIp = headers['x-forwarded-for'] ?? ip
+        // const realIp = headers['x-forwarded-for'] ?? ip
         const requestId = headers['x-request-id'] ?? uuidv4()
         const start = Date.now()
         const userId = request.user?.sub ?? 'anonymous'
@@ -52,7 +52,7 @@ export class LoggingInterceptor implements NestInterceptor{
                         method,
                         path,
                         statusCode: response.statusCode,
-                        ip: realIp,
+                        ip: ip,
                         userAgent,
                         duration: `${Date.now() - start}ms`,
                         responseSizeBytes: bodySize,     
@@ -72,7 +72,7 @@ export class LoggingInterceptor implements NestInterceptor{
                         method,
                         path,
                         statusCode: error.status ?? 500,
-                        ip: realIp,
+                        ip: ip,
                         userAgent,
                         duration: `${Date.now() - start}ms`,
                         errorMessage: error.message,

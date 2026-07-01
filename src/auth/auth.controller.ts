@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { WebResponse } from 'src/model/web-response.model';
@@ -16,6 +17,7 @@ export class AuthController {
 
     @Post('/register')
     @HttpCode(HttpStatus.CREATED)
+    @Throttle({ register: { limit: 3, ttl: 1 * 60 * 1000, blockDuration: 60 * 60 * 1000 } }) // 3x/menit, block 1 jam
     @ApiOperation({ summary: 'Register new user' })
     @ApiBody({ type: AuthRegisterRequest })
     @ApiResponse({ status: 201, description: 'User registered successfully' })
@@ -34,6 +36,7 @@ export class AuthController {
 
     @Post("/login")
     @HttpCode(HttpStatus.OK)
+    @Throttle({ login: { limit: 5, ttl: 1 * 60 * 1000, blockDuration: 5 * 60 * 1000 } }) // 5x/menit, block 5 menit
     @ApiOperation({ summary: 'Login user' })
     @ApiBody({ type: AuthLoginRequest })
     @ApiResponse({ 
@@ -69,6 +72,7 @@ export class AuthController {
 
     @Post('/refresh')
     @HttpCode(HttpStatus.OK)
+    @Throttle({ public: { limit: 30, ttl: 1 * 60 * 1000, blockDuration: 5 * 60 * 1000 } }) // 30x/menit, block 5 menit
     @ApiOperation({ summary: 'Renew access token using refresh token cookie' })
     @ApiCookieAuth('refreshToken')
     @ApiResponse({ status: 200, description: 'New access token generated' })
@@ -93,6 +97,7 @@ export class AuthController {
     @Post('/logout')
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard)
+    @Throttle({ private: { limit: 10, ttl: 1 * 60 * 1000, blockDuration: 1 * 60 * 1000 } }) // 10x/menit, block 1 menit
     @ApiBearerAuth()
     @ApiCookieAuth('refreshToken')
     @ApiOperation({ summary: 'Logout user — blacklist access token & remove refresh token' })

@@ -1,4 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { EmailVerificationService } from './email-verification.service';
 import { WebResponse } from 'src/model/web-response.model';
 import { AuthGuard } from 'src/common/guards/auth.guard';
@@ -17,6 +18,7 @@ export class EmailVerificationController {
     @Post('/resend')
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard)
+    @Throttle({ private: { limit: 3, ttl: 1 * 60 * 60 * 1000, blockDuration: 24 * 60 * 60 * 1000 } }) // 3x/jam, block 24 jam
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Resend email verification' })
     @ApiResponse({ status: 200, description: 'Verification email sent' })
@@ -38,6 +40,7 @@ export class EmailVerificationController {
 
     @Get('/verify')
     @HttpCode(HttpStatus.OK)
+    @Throttle({ public: { limit: 5, ttl: 1 * 60 * 1000, blockDuration: 5 * 60 * 1000 } }) // 5x/menit, block 5 menit
     @ApiOperation({ summary: 'Verify email with token' })
     @ApiResponse({ status: 200, description: 'Email verified successfully' })
     @ApiResponse({ status: 400, description: 'Invalid, expired, or already used token' })

@@ -22,9 +22,7 @@ export class QueueProducer {
                     delay: 5000,                // retry pertama 5s, kedua 10s, ketiga 20s
                 },
                 removeOnComplete: true,         // hapus job setelah berhasil
-                removeOnFail: {
-                    age: 1 * 24 * 3600
-                }
+                removeOnFail: 100
             }
         )
     }
