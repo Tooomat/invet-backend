@@ -36,9 +36,10 @@ Backend service untuk **Invet** — platform undangan digital/online yang memung
 
 ```
 src/
-├── auth/               # module Auth (register, login, logout, refresh)
-├── email/              # module Email (configurasi RESEND)
+├── auth/               # module Auth (register, login, logout, refresh, forgotPassword, resetPassword)
+├── user/               # module User (current, update, profile, changeEmail, verifyChangeEmail, changePassword)
 ├── email-verification/ # module Email-Verification (sendOnRegister, resend, verify)
+├── email/              # module Email (configurasi RESEND)
 ├── queue/              # module Queue (producer/add to queue dan consumer/worker) sebagai Message Queue
 |
 ├── common/             # Shared providers

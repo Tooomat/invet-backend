@@ -4,13 +4,14 @@ import { ConfigService } from '@nestjs/config';
 
 import { PrismaService } from 'src/common/prisma.service';
 import { EmailVerificationValidation } from './email-verification.validation';
-import { randomUUID } from 'crypto';
+import { randomBytes } from 'crypto'
 import { Prisma, StatusUser } from 'src/generated/prisma/client';
 import { RedisService } from 'src/common/redis.service';
 import { QueueProducer } from 'src/queue/queue.producer';
 import { verifyEmailTemplate } from 'src/email/templates/verify-email.template';
 import { VerifyEmailQuery } from 'src/model/email-verification.model';
 import { ValidationService } from 'src/common/validation.service';
+import { escapeHtml } from 'src/common/utils/html.util';
 
 @Injectable()
 export class EmailVerificationService {
@@ -40,7 +41,7 @@ export class EmailVerificationService {
                 }
             })
     
-            const token = randomUUID()
+            const token = randomBytes(32).toString('base64url') // 43 karakter, URL-safe
             const exp = new Date(Date.now() + this.TOKEN_EXPIRES_MS)
     
             const emailVerifData: Prisma.EmailVerificationCreateInput = {
@@ -73,33 +74,65 @@ export class EmailVerificationService {
             return { emailVerif, user }
         })
 
-        if (!user) return
+        if (!user) {
+            this.logger.warn({ 
+                type: 'email_verification_failed', 
+                reason: 'user_not_found', 
+                userId, 
+                requestId 
+            })
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+        }
 
-        const verifyLink: string = `${this.configService.getOrThrow('FRONTEND_URL')}/login/verify-email?token=${emailVerif.token}`
+        try {
 
-        const templateHtml = verifyEmailTemplate({
-            fullName: user.lastName ? `${user.firstName} ${user.lastName}` : `${user.firstName}`,
-            verifyUrl: verifyLink,
-            expiresIn: '1 jam',
-        })
+            const verifyLink: string = `${this.configService.getOrThrow('FRONTEND_URL')}/login/verify-email?token=${emailVerif.token}`
 
-        await this.queueProducer.enqueueEmail(
-            {
-                to: user.email,
-                subject: templateHtml.subject,
-                html: templateHtml.html
-            },
-            `email-verify-${userId}`
-        )
+            const templateHtml = verifyEmailTemplate({
+                fullName: escapeHtml(user.lastName 
+                    ? `${user.firstName} ${user.lastName}` 
+                    : user.firstName
+                ),
+                verifyUrl: verifyLink,
+                expiresIn: '1 jam',
+            })
 
-        // SET COOLDOWN KIRIM ULANG
-        await this.redisService.set(`email-verify:cooldown:${ userId }`, '1', this.COOLDOWN_SEC)
+            await this.queueProducer.enqueueEmail(
+                {
+                    to: user.email,
+                    subject: templateHtml.subject,
+                    html: templateHtml.html
+                },
+                `email-verify-${userId}`
+            )
 
-        this.logger.info({
-            type: 'email_verification_queued',
-            userId,
-            requestId,
-        })
+            // SET COOLDOWN KIRIM ULANG
+            // await this.redisService.set(`email-verify:cooldown:${ userId }`, '1', this.COOLDOWN_SEC)
+            const cooldownSet = await this.redisService.setNx(`email-verify:cooldown:${userId}`, '1', this.COOLDOWN_SEC)
+
+            this.logger.info({
+                type: 'email_verification_queued',
+                userId,
+                requestId,
+            })
+
+        } catch (e) {
+
+            if (e instanceof HttpException) throw e
+
+            this.logger.error({
+                type: 'email_verification_enqueue_failed',
+                userId,
+                requestId,
+                error: (e as Error).message,
+                timestamp: new Date().toISOString()
+            })
+
+            throw new HttpException(
+                'Failed to send verification email, please try again',
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
+        }
     }
 
     async resend(userId: string, requestId: string): Promise<void> {
@@ -136,7 +169,7 @@ export class EmailVerificationService {
             }
         })
 
-        if (user?.isEmailVerified && user.emailVerifiedAt) {
+        if (user!.isEmailVerified && user!.emailVerifiedAt) {
 
             this.logger.warn({
                 type: 'resend_verification_already_verified',
@@ -217,7 +250,7 @@ export class EmailVerificationService {
         if (emailVerif.user.emailVerifiedAt && emailVerif.user.isEmailVerified) {
             this.logger.warn({
                 type: 'email_verification_failed',
-                reason: 'token_already_used',
+                reason: 'already_verified',
                 userId: emailVerif.userId,
                 requestId,
                 timestamp: new Date().toISOString()
@@ -250,8 +283,6 @@ export class EmailVerificationService {
                 }
             })
         })
-
-        await this.redisService.del(`email-verif:cooldown:${emailVerif.userId}`)
 
         this.logger.info({
             type: 'email_verified',

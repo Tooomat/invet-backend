@@ -21,7 +21,7 @@ import { EMAIL_QUEUE } from 'src/email/email.queue';
             })
         }),
         BullModule.registerQueue({
-            name: EMAIL_QUEUE
+            name: EMAIL_QUEUE,
         }),
         EmailModule
     ],

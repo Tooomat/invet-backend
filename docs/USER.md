@@ -227,6 +227,14 @@ Verifikasi email baru menggunakan token dari link di email. Tidak membutuhkan ac
   "errors": "Verification token has expired"
 }
 ```
+**Response:** `400 Bad Request` — email was not send
+```json
+{
+  "success": false,
+  "message": "Bad Request",
+  "errors": "Verification email was not sent, please request again"
+}
+```
 
 ---
 

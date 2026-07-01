@@ -4,11 +4,15 @@ export class AuthValidation {
     static readonly REGISTER_SCHEMA = z.object({
         firstName: z
             .string()
+            .trim()
             .min(1, 'first name must contain at least 1 characters')
-            .max(50),
+            .max(50)
+            .regex(/^[^<>]*$/, "First name contains invalid characters"),
         lastName: z
             .string()
+            .trim()
             .max(100)
+            .regex(/^[^<>]*$/, "Last name contains invalid characters")
             .optional(),
         // phone: z
         //     .string()
@@ -25,11 +29,13 @@ export class AuthValidation {
         //     .optional(),
         email: z
             .string()
+            .trim()
             .email()
             .min(1, 'email must be at least 1 characters')
             .max(100),
         password: z
             .string()
+            .trim()
             .min(8, 'Password must contain at least 8 characters')
             .max(100)
             .refine((val) => /[a-z]/.test(val), {
@@ -49,11 +55,13 @@ export class AuthValidation {
     static readonly LOGIN_SCHEMA = z.object({
         email: z
             .string()
+            .trim()
             .email()
             .min(1, 'email must be at least 1 characters')
             .max(100),
         password: z
             .string()
+            .trim()
             .min(8, 'Password must contain at least 8 characters')
             .max(100)
             .refine((val) => /[a-z]/.test(val), {

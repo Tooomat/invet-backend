@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UserService } from './user.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -19,6 +20,7 @@ export class UserController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard)
+    @Throttle({ private: { limit: 100, ttl: 1 * 60 * 1000, blockDuration: 1 * 60 * 1000 } }) // 100x/menit, block 1 menit
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get current authenticated user' })
     @ApiResponse({ status: 200, description: 'Current user data' })
@@ -38,6 +40,7 @@ export class UserController {
     @Patch()
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard)
+    @Throttle({ private: { limit: 20, ttl: 1 * 60 * 1000, blockDuration: 1 * 60 * 1000 } }) // 20x/menit, block 1 menit
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update current user profile' })
     @ApiBody({ type: UserUpdateRequest })
@@ -63,6 +66,7 @@ export class UserController {
     @Post('/change-email')
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard)
+    @Throttle({ private: { limit: 3, ttl: 1 * 60 * 60 * 1000, blockDuration: 24 * 60 * 60 * 1000 } }) // 3x/jam, block 24 jam
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Request email change — sends verification to new email' })
     @ApiBody({ type: ChangeEmailUserRequest })
@@ -85,6 +89,7 @@ export class UserController {
     
     @Get('/verify/change-email')
     @HttpCode(HttpStatus.OK)
+    @Throttle({ public: { limit: 5, ttl: 1 * 60 * 1000, blockDuration: 5 * 60 * 1000 } }) // 5x/menit, block 5 menit
     @ApiOperation({ summary: 'Verify new email address via token from email link' })
     @ApiResponse({ status: 200, description: 'Email changed successfully, all sessions invalidated' })
     @ApiResponse({ status: 400, description: 'Invalid, expired, or already used token' })
@@ -114,6 +119,7 @@ export class UserController {
     @Put('/change-password')
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard)
+    @Throttle({ private: { limit: 5, ttl: 1 * 60 * 60 * 1000, blockDuration: 24 * 60 * 60 * 1000 } }) // 5x/jam, block 24 jam
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Change user password' })
     @ApiBody({ type: ChangePasswordRequest })
